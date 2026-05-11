@@ -1,0 +1,103 @@
+version: '3.9'
+
+services:
+  mongo:
+    image: mongo:7
+    container_name: campaign_mongo
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: campaign_pass
+      MONGO_INITDB_DATABASE: campaign_db
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: ['CMD', 'mongosh', '--eval', "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: campaign_redis
+    restart: unless-stopped
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: campaign_backend
+    restart: unless-stopped
+    ports:
+      - '4000:4000'
+    environment:
+      MONGO_URI: mongodb://admin:campaign_pass@mongo:27017/campaign_db?authSource=admin
+      MONGO_DB_NAME: campaign_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ''
+      PORT: 4000
+      NODE_ENV: development
+      CORS_ORIGIN: http://localhost:5173
+      QUEUE_NAME: campaign_queue
+      WORKER_CONCURRENCY: 5
+      BATCH_SIZE: 500
+      PUBSUB_CHANNEL_PREFIX: campaign
+      RATE_LIMIT_WINDOW_MS: 60000
+      RATE_LIMIT_MAX: 200
+      LOG_LEVEL: info
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    container_name: campaign_worker
+    restart: unless-stopped
+    environment:
+      MONGO_URI: mongodb://admin:campaign_pass@mongo:27017/campaign_db?authSource=admin
+      MONGO_DB_NAME: campaign_db
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ''
+      QUEUE_NAME: campaign_queue
+      WORKER_CONCURRENCY: 5
+      PUBSUB_CHANNEL_PREFIX: campaign
+      NODE_ENV: development
+    depends_on:
+      mongo:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      backend:
+        condition: service_started
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: campaign_frontend
+    restart: unless-stopped
+    ports:
+      - '5173:80'
+    depends_on:
+      - backend
+
+volumes:
+  mongo_data:
+  redis_data:
