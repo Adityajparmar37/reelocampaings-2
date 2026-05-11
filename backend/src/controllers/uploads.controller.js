@@ -7,16 +7,6 @@ const uploadsRepo = require('../queries/uploads.queries');
 const uploadsService = require('../modules/uploads/uploads.service');
 const { parsePagination, paginationMeta } = require('../utils/pagination');
 
-const upload = multer({
-  dest: '/tmp/campaign_uploads/',
-  limits: { fileSize: 50 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    if (path.extname(file.originalname).toLowerCase() !== '.csv') {
-      return cb(Object.assign(new Error('Only CSV files allowed'), { status: 400 }));
-    }
-    cb(null, true);
-  },
-});
 
 const uploadCSV = asyncWrapper(async (req, res) => {
   if (!req.file) throw Object.assign(new Error('No file uploaded'), { status: 400 });
@@ -48,4 +38,4 @@ const listUploads = asyncWrapper(async (req, res) => {
   res.json({ success: true, data: { items, meta: paginationMeta({ page, limit, total }) } });
 });
 
-module.exports = { upload, uploadCSV, getUploadStatus, listUploads };
+module.exports = { uploadCSV, getUploadStatus, listUploads };

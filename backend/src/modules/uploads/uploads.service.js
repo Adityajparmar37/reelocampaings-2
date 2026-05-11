@@ -4,7 +4,6 @@ const fs = require('fs');
 const csvParser = require('csv-parser');
 const uploadsRepo = require('../../queries/uploads.queries');
 const contactsRepo = require('../../queries/contacts.queries');
-const { chunkArray } = require('../../utils/chunkArray');
 const { logger } = require('../../middlewares/logger');
 
 const CHUNK_SIZE = 1000; // rows per bulkWrite batch
