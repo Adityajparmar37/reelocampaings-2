@@ -1,7 +1,7 @@
 'use strict';
 
-const service = require('./campaigns.service');
-const { asyncWrapper } = require('../../middlewares/asyncWrapper');
+const service = require('../modules/campaigns/campaigns.service');
+const { asyncWrapper } = require('../middlewares/asyncWrapper');
 
 const listCampaigns    = asyncWrapper(async (req, res) => res.json({ success: true, data: await service.listCampaigns(req.query) }));
 const getCampaign      = asyncWrapper(async (req, res) => res.json({ success: true, data: await service.getCampaign(req.params.id) }));

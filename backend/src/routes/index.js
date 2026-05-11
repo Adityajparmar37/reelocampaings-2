@@ -2,10 +2,10 @@
 
 const { Router } = require('express');
 
-const contactsRoutes = require('../modules/contacts/contacts.routes');
-const campaignsRoutes = require('../modules/campaigns/campaigns.routes');
-const uploadsRoutes = require('../modules/uploads/uploads.routes');
-const analyticsRoutes = require('../modules/analytics/analytics.routes');
+const contactsRoutes = require('./contacts.routes');
+const campaignsRoutes = require('./campaigns.routes');
+const uploadsRoutes = require('./uploads.routes');
+const analyticsRoutes = require('./analytics.routes');
 
 const router = Router();
 

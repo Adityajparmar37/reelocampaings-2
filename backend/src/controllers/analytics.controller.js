@@ -1,8 +1,8 @@
 'use strict';
 
-const analyticsRepo = require('./analytics.repository');
-const { asyncWrapper } = require('../../middlewares/asyncWrapper');
-const { getQueueStats: getQueueMetrics } = require('../../queues/campaign.queue');
+const analyticsRepo = require('../queries/analytics.queries');
+const { asyncWrapper } = require('../middlewares/asyncWrapper');
+const { getQueueStats: getQueueMetrics } = require('../queues/campaign.queue');
 
 const getGlobalStats = asyncWrapper(async (req, res) => {
   const stats = await analyticsRepo.getGlobalStats();

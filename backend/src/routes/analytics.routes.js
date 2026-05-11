@@ -1,7 +1,7 @@
 'use strict';
 
 const { Router } = require('express');
-const controller = require('./analytics.controller');
+const controller = require('../controllers/analytics.controller');
 
 const router = Router();
 

@@ -1,6 +1,6 @@
 'use strict';
 
-const contactsRepo = require('./contacts.repository');
+const contactsRepo = require('../../queries/contacts.queries');
 const { parsePagination, paginationMeta } = require('../../utils/pagination');
 
 const listContacts = async (query) => {

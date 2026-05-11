@@ -2,10 +2,10 @@
 
 const multer = require('multer');
 const path = require('path');
-const { asyncWrapper } = require('../../middlewares/asyncWrapper');
-const uploadsRepo = require('./uploads.repository');
-const uploadsService = require('./uploads.service');
-const { parsePagination, paginationMeta } = require('../../utils/pagination');
+const { asyncWrapper } = require('../middlewares/asyncWrapper');
+const uploadsRepo = require('../queries/uploads.queries');
+const uploadsService = require('../modules/uploads/uploads.service');
+const { parsePagination, paginationMeta } = require('../utils/pagination');
 
 const upload = multer({
   dest: '/tmp/campaign_uploads/',

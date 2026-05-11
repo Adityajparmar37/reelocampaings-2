@@ -2,8 +2,8 @@
 
 const fs = require('fs');
 const csvParser = require('csv-parser');
-const uploadsRepo = require('./uploads.repository');
-const contactsRepo = require('../contacts/contacts.repository');
+const uploadsRepo = require('../../queries/uploads.queries');
+const contactsRepo = require('../../queries/contacts.queries');
 const { chunkArray } = require('../../utils/chunkArray');
 const { logger } = require('../../middlewares/logger');
 

@@ -1,9 +1,9 @@
 'use strict';
 
 const { Router } = require('express');
-const controller = require('./campaigns.controller');
-const { validate } = require('../../middlewares/validate');
-const { createCampaignSchema, updateCampaignSchema, campaignQuerySchema } = require('../../validators/campaign.validator');
+const controller = require('../controllers/campaigns.controller');
+const { validate } = require('../middlewares/validate');
+const { createCampaignSchema, updateCampaignSchema, campaignQuerySchema } = require('../validators/campaign.validator');
 
 const router = Router();
 

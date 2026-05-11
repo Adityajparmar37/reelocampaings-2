@@ -1,8 +1,8 @@
 'use strict';
 
-const campaignsRepo = require('./campaigns.repository');
-const messagesRepo = require('../messages/messages.repository');
-const contactsRepo = require('../contacts/contacts.repository');
+const campaignsRepo = require('../../queries/campaigns.queries');
+const messagesRepo = require('../../queries/messages.queries');
+const contactsRepo = require('../../queries/contacts.queries');
 const { enqueueCampaignBatch } = require('../../queues/campaign.queue');
 const { chunkArray } = require('../../utils/chunkArray');
 const { parsePagination, paginationMeta } = require('../../utils/pagination');

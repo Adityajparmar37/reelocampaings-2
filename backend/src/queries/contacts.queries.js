@@ -1,7 +1,7 @@
 'use strict';
 
 const { ObjectId } = require('mongodb');
-const { getCollection } = require('../../config/db');
+const { getCollection } = require('../config/db');
 
 const col = () => getCollection('contacts');
 

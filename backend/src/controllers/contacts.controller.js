@@ -1,7 +1,7 @@
 'use strict';
 
-const contactsService = require('./contacts.service');
-const { asyncWrapper } = require('../../middlewares/asyncWrapper');
+const contactsService = require('../modules/contacts/contacts.service');
+const { asyncWrapper } = require('../middlewares/asyncWrapper');
 
 const listContacts = asyncWrapper(async (req, res) => {
   const result = await contactsService.listContacts(req.query);

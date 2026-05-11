@@ -1,6 +1,6 @@
 'use strict';
 
-const { getCollection } = require('../../config/db');
+const { getCollection } = require('../config/db');
 const { ObjectId } = require('mongodb');
 
 const col = () => getCollection('uploads');

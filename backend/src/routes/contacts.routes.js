@@ -1,9 +1,9 @@
 'use strict';
 
 const { Router } = require('express');
-const contactsController = require('./contacts.controller');
-const { validate } = require('../../middlewares/validate');
-const { contactQuerySchema } = require('../../validators/contact.validator');
+const contactsController = require('../controllers/contacts.controller');
+const { validate } = require('../middlewares/validate');
+const { contactQuerySchema } = require('../validators/contact.validator');
 
 const router = Router();
 
