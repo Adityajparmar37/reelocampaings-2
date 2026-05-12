@@ -30,7 +30,7 @@ Express API + Socket.IO Gateway (Port 4000)
 | Frontend | React 18, Vite, TailwindCSS, Redux Toolkit, Socket.IO Client, Recharts |
 | Backend API | Node.js, Express.js, Socket.IO |
 | Worker | Node.js, BullMQ |
-| Database | MongoDB 7 (native driver, **no Mongoose**) |
+| Database | MongoDB 7 (native driver) |
 | Queue | BullMQ + Redis |
 | Realtime | Redis Pub/Sub → Socket.IO |
 | Infra | Docker Compose |
@@ -121,7 +121,6 @@ Jane Smith,jane@example.com,,active,{}
 ```
 
 - `tags`: pipe-separated (`vip|newsletter`)
-- `metadata`: JSON string
 - Supports 50k+ rows via streaming + chunked bulkWrite
 
 ## Realtime Events (Socket.IO)
