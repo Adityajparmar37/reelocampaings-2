@@ -12,18 +12,38 @@ const redisOptions = {
   } : undefined,
 };
 
-console.log('[Worker/Redis] Connecting to:', env.REDIS_URL ? 'Upstash/Cloud Redis' : 'localhost:6379');
+const redisUrl = env.REDIS_URL;
+const isCloudRedis = redisUrl.startsWith('rediss://');
+const redisHost = isCloudRedis ? 'Cloud Redis (TLS)' : redisUrl;
 
-const bullMQConnection = new Redis(env.REDIS_URL, redisOptions);
+console.log('[Worker/Redis] Connecting to:', redisHost);
+console.log('[Worker/Redis] TLS enabled:', isCloudRedis);
 
-const redisPublisher = new Redis(env.REDIS_URL, redisOptions);
+const bullMQConnection = new Redis(redisUrl, redisOptions);
+const redisPublisher = new Redis(redisUrl, redisOptions);
+
+bullMQConnection.on('connect', () => {
+  console.log('[Worker/Redis] ✓ BullMQ connection established');
+});
+
+bullMQConnection.on('ready', () => {
+  console.log('[Worker/Redis] ✓ BullMQ connection ready');
+});
+
+bullMQConnection.on('error', (e) => {
+  console.error('[Worker/Redis] ✗ BullMQ error:', e.message);
+  if (e.code === 'ECONNREFUSED') {
+    console.error('[Worker/Redis] ✗ Connection refused. Check REDIS_URL environment variable.');
+    console.error('[Worker/Redis] Current URL:', redisUrl);
+  }
+});
 
 redisPublisher.on('connect', () => {
-  console.log('[Worker/Redis] Publisher connected');
+  console.log('[Worker/Redis] ✓ Publisher connected');
 });
 
 redisPublisher.on('error', (e) => {
-  console.error('[Worker/Redis] Publisher error:', e.message);
+  console.error('[Worker/Redis] ✗ Publisher error:', e.message);
 });
 
 module.exports = {
