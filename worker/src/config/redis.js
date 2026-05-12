@@ -3,17 +3,19 @@
 const Redis = require('ioredis');
 const env = require('./env');
 
-// Shared Redis options
 const redisOptions = {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
+  // Enable TLS for rediss:// URLs (Upstash, Railway, etc.)
+  tls: env.REDIS_URL?.startsWith('rediss://') ? {
+    rejectUnauthorized: false
+  } : undefined,
 };
-console.log(env.REDIS_URL,'env.REDIS_URL')
 
-// BullMQ connection
+console.log('[Worker/Redis] Connecting to:', env.REDIS_URL ? 'Upstash/Cloud Redis' : 'localhost:6379');
+
 const bullMQConnection = new Redis(env.REDIS_URL, redisOptions);
 
-// Publisher for Pub/Sub events
 const redisPublisher = new Redis(env.REDIS_URL, redisOptions);
 
 redisPublisher.on('connect', () => {

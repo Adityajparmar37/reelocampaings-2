@@ -6,9 +6,13 @@ const env = require('./env');
 const redisOptions = {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
+  // Enable TLS for rediss:// URLs (Upstash, Railway, etc.)
+  tls: env.REDIS_URL?.startsWith('rediss://') ? {
+    rejectUnauthorized: false
+  } : undefined,
 };
 
-console.log(env.REDIS_URL,'env.REDIS_URL')
+console.log('[Redis] Connecting to:', env.REDIS_URL ? 'Upstash/Cloud Redis' : 'localhost:6379');
 
 const redisClient = new Redis(env.REDIS_URL, redisOptions);
 
