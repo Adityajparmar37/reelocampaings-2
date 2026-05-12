@@ -51,14 +51,15 @@ export const useUploadSocket = () => {
         errors: data.errors,
       }))
 
-      // Reload contacts after completion
+      // Reload contacts after 1 second
       setTimeout(() => {
         dispatch(fetchContacts({ page: 1, limit: 50 }))
-        // Clear progress after 5 seconds
-        setTimeout(() => {
-          dispatch(clearUploadProgress(data.uploadId))
-        }, 5000)
       }, 1000)
+
+      // Clear progress UI after 6 seconds (so user can see the results)
+      setTimeout(() => {
+        dispatch(clearUploadProgress(data.uploadId))
+      }, 6000)
     }
 
     // Handle upload failed

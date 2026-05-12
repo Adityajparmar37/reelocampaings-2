@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
-import { initSocket, getSocket } from '../sockets/socketClient'
+import { initSocket } from '../sockets/socketClient'
 import { setConnected } from '../store/slices/socketSlice'
 
 // Hook to initialize socket and track connection status
