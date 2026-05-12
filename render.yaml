@@ -1,0 +1,17 @@
+services:
+  # Frontend Static Site
+  - type: web
+    name: campaign-frontend
+    env: static
+    region: oregon
+    buildCommand: cd frontend && npm install && npm run build
+    staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        sync: false
+      - key: VITE_SOCKET_URL
+        sync: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
