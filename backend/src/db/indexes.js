@@ -29,6 +29,8 @@ const setupIndexes = async () => {
     { key: { campaignId: 1, status: 1 }, name: 'idx_msg_campaignId_status' },
     { key: { campaignId: 1, status: 1, createdAt: 1 }, name: 'idx_msg_retry' },
     { key: { contactId: 1 }, name: 'idx_msg_contactId' },
+    // Retry count for reporting
+    { key: { retryCount: 1 }, name: 'idx_msg_retryCount', sparse: true },
   ]);
 
   // uploads

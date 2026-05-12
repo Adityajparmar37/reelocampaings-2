@@ -27,7 +27,7 @@ const findQueuedMessagesByContactIds = async (campaignId, contactIds) => {
   return col()
     .find(
       { campaignId: cId, contactId: { $in: contactObjectIds }, status: { $in: ['queued', 'processing'] } },
-      { projection: { _id: 1, email: 1, name: 1, contactId: 1 } }
+      { projection: { _id: 1, email: 1, name: 1, contactId: 1, retryCount: 1 } }
     )
     .toArray();
 };
@@ -38,12 +38,28 @@ const findQueuedMessagesByContactIds = async (campaignId, contactIds) => {
  */
 const bulkUpdateStatuses = async (updates) => {
   if (!updates.length) return;
-  const ops = updates.map(({ id, status, error }) => ({
-    updateOne: {
-      filter: { _id: new ObjectId(id) },
-      update: { $set: { status, error: error || null, processedAt: new Date() } },
-    },
-  }));
+  
+  const now = new Date();
+  const ops = updates.map(({ id, status, error, retryCount = 0 }) => {
+    const update = {
+      status,
+      error: error || null,
+      processedAt: now,
+    };
+
+    // Track retry count for reporting
+    if (status === 'failed' || status === 'permanently_failed') {
+      update.retryCount = retryCount;
+    }
+
+    return {
+      updateOne: {
+        filter: { _id: new ObjectId(id) },
+        update: { $set: update },
+      },
+    };
+  });
+
   await col().bulkWrite(ops, { ordered: false });
 };
 

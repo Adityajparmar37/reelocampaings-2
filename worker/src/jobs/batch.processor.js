@@ -2,10 +2,12 @@
 
 const messagesRepo = require('../repositories/messages.repository');
 const { publishEvent } = require('../pubsub/publisher');
+const { enqueueMessageRetry } = require('../queues/retry.queue');
 
 const FAILURE_RATE_MIN = 0.05;
 const FAILURE_RATE_MAX = 0.15;
 const SEND_DELAY_MS = 2000; // simulate per-message send time
+const MAX_RETRIES = 3;
 
 /**
  * Simulates sending a message to a contact.
@@ -38,7 +40,7 @@ const simulateSend = async (message) => {
 const processBatch = async ({ campaignId, batchIndex, messageIds, messageTemplate }) => {
   console.log(`[Worker] Processing batch ${batchIndex} for campaign ${campaignId} (${messageIds.length} messages)`);
 
-  // Fetch message records from DB
+  // Fetch message records from DB (include retryCount)
   const messages = await messagesRepo.findQueuedMessagesByContactIds(campaignId, messageIds);
 
   if (!messages.length) {
@@ -62,6 +64,7 @@ const processBatch = async ({ campaignId, batchIndex, messageIds, messageTemplat
         id: msg._id.toString(),
         status: success ? 'sent' : 'failed',
         error,
+        retryCount: msg.retryCount || 0, // Pass current retry count
       };
     })
   );
@@ -73,13 +76,37 @@ const processBatch = async ({ campaignId, batchIndex, messageIds, messageTemplat
   // 1. bulkWrite all status updates — single DB operation
   await messagesRepo.bulkUpdateStatuses(results);
 
-  // 2. Atomic $inc on campaign counters
+  // 2. Enqueue failed messages for retry (if under max retries)
+  const failedMessages = results
+    .filter((r) => r.status === 'failed')
+    .map((r, idx) => {
+      const msg = messages.find((m) => m._id.toString() === r.id);
+      return {
+        messageId: r.id,
+        campaignId,
+        email: msg.email,
+        name: msg.name,
+        messageTemplate,
+        retryCount: r.retryCount,
+      };
+    });
+
+  for (const failedMsg of failedMessages) {
+    if (failedMsg.retryCount < MAX_RETRIES) {
+      await enqueueMessageRetry(failedMsg);
+      console.log(`[Worker] Enqueued message ${failedMsg.messageId} for retry (attempt ${failedMsg.retryCount + 1})`);
+    } else {
+      console.log(`[Worker] Message ${failedMsg.messageId} permanently failed after ${MAX_RETRIES} attempts`);
+    }
+  }
+
+  // 3. Atomic $inc on campaign counters
   await messagesRepo.incrementCampaignCounters(campaignId, {
     sent: sentCount,
     failed: failedCount,
   });
 
-  // 3. Publish batch completion event
+  // 4. Publish batch completion event
   await publishEvent('campaign.batch.processed', {
     campaignId,
     batchIndex,
@@ -88,14 +115,14 @@ const processBatch = async ({ campaignId, batchIndex, messageIds, messageTemplat
     total: messages.length,
   });
 
-  // 4. Publish message-level event
+  // 5. Publish message-level event
   await publishEvent('message.batch.processed', {
     campaignId,
     batchIndex,
     results: results.map((r) => ({ id: r.id, status: r.status })),
   });
 
-  // 5. Check if campaign is fully done
+  // 6. Check if campaign is fully done
   const finalStatus = await messagesRepo.finalizeCampaignIfDone(campaignId);
 
   if (finalStatus === 'completed') {
