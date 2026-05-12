@@ -10,4 +10,14 @@ export default defineConfig({
       '/socket.io': { target: 'http://localhost:4000', ws: true },
     },
   },
+  build: {
+    outDir: 'dist',
+    // Copy _redirects file to dist folder for Render SPA routing
+    rollupOptions: {
+      output: {
+        manualChunks: undefined,
+      },
+    },
+  },
+  publicDir: 'public',
 })
