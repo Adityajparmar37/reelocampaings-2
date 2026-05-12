@@ -16,7 +16,7 @@ const campaignQueue = new Queue(env.QUEUE_NAME, {
   defaultJobOptions: {
     attempts: 3,
     backoff: { type: 'exponential', delay: 2000 },
-    removeOnComplete: { count: 500 },
+    removeOnComplete: { age: 600},
     removeOnFail: { count: 1000 },
   },
 });

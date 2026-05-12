@@ -15,7 +15,7 @@ const retryQueue = new Queue('message-retry', {
       type: 'exponential',
       delay: 60000, // Start with 1 minute, then 2min, 4min
     },
-    removeOnComplete: { count: 1000 },
+    removeOnComplete: { age: 600 },
     removeOnFail: { count: 500 },
   },
 });
