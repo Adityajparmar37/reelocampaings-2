@@ -2,16 +2,13 @@ import { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchGlobalStats, fetchQueueStats, fetchRecentActivity } from '../store/slices/analyticsSlice'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend } from 'recharts'
-
-const STATUS_COLORS = { completed: '#10b981', running: '#3b82f6', failed: '#ef4444', draft: '#6b7280', queued: '#f59e0b' }
-
-const QUEUE_METRICS = [
-  { key: 'waiting',   label: 'Waiting',   cls: 'text-amber-400',   dot: 'bg-amber-400' },
-  { key: 'active',    label: 'Active',    cls: 'text-blue-400',    dot: 'bg-blue-400' },
-  { key: 'completed', label: 'Completed', cls: 'text-emerald-400', dot: 'bg-emerald-400' },
-  { key: 'failed',    label: 'Failed',    cls: 'text-red-400',     dot: 'bg-red-400' },
-  { key: 'delayed',   label: 'Delayed',   cls: 'text-purple-400',  dot: 'bg-purple-400' },
-]
+import {
+  CAMPAIGN_STATUS_COLORS,
+  QUEUE_METRICS,
+  REFRESH_INTERVALS,
+  RECENT_ACTIVITY_LIMITS,
+  CAMPAIGN_NAME_MAX_LENGTH,
+} from '../constants'
 
 export default function AnalyticsPage() {
   const dispatch = useDispatch()
@@ -20,8 +17,8 @@ export default function AnalyticsPage() {
   useEffect(() => {
     dispatch(fetchGlobalStats())
     dispatch(fetchQueueStats())
-    dispatch(fetchRecentActivity(10))
-    const t = setInterval(() => { dispatch(fetchGlobalStats()); dispatch(fetchQueueStats()) }, 10_000)
+    dispatch(fetchRecentActivity(RECENT_ACTIVITY_LIMITS.ANALYTICS_PAGE))
+    const t = setInterval(() => { dispatch(fetchGlobalStats()); dispatch(fetchQueueStats()) }, REFRESH_INTERVALS.ANALYTICS_PAGE)
     return () => clearInterval(t)
   }, [dispatch])
 
@@ -30,7 +27,7 @@ export default function AnalyticsPage() {
     : []
 
   const barData = (activity || []).map((c) => ({
-    name: c.name.length > 14 ? c.name.slice(0, 14) + '…' : c.name,
+    name: c.name.length > CAMPAIGN_NAME_MAX_LENGTH ? c.name.slice(0, CAMPAIGN_NAME_MAX_LENGTH) + '…' : c.name,
     Sent:   c.sentCount   || 0,
     Failed: c.failedCount || 0,
   }))
@@ -66,7 +63,7 @@ export default function AnalyticsPage() {
               <ResponsiveContainer width="55%" height={200}>
                 <PieChart>
                   <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={80} dataKey="value" paddingAngle={3}>
-                    {pieData.map((e) => <Cell key={e.name} fill={STATUS_COLORS[e.name] || '#6366f1'} />)}
+                    {pieData.map((e) => <Cell key={e.name} fill={CAMPAIGN_STATUS_COLORS[e.name] || '#6366f1'} />)}
                   </Pie>
                   <Tooltip contentStyle={{ background: '#111827', border: '1px solid #374151', borderRadius: 8, color: '#f3f4f6', fontSize: 12 }} />
                 </PieChart>
@@ -74,7 +71,7 @@ export default function AnalyticsPage() {
               <div className="space-y-2">
                 {pieData.map((e) => (
                   <div key={e.name} className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-sm" style={{ background: STATUS_COLORS[e.name] || '#6366f1' }} />
+                    <span className="w-3 h-3 rounded-sm" style={{ background: CAMPAIGN_STATUS_COLORS[e.name] || '#6366f1' }} />
                     <span className="text-sm text-gray-300 capitalize">{e.name}</span>
                     <span className="text-sm font-semibold text-white ml-auto">{e.value}</span>
                   </div>

@@ -3,6 +3,7 @@ import { useDispatch } from 'react-redux'
 import { onCampaignEvent, offCampaignEvent } from '../sockets/socketClient'
 import { setUploadProgress, clearUploadProgress } from '../store/slices/uploadSlice'
 import { fetchContacts } from '../store/slices/contactSlice'
+import { SOCKET_EVENTS, UPLOAD_TIMEOUTS, CONTACTS_PER_PAGE } from '../constants'
 
 // Hook to listen to real-time upload progress
 export const useUploadSocket = () => {
@@ -53,13 +54,13 @@ export const useUploadSocket = () => {
 
       // Reload contacts after 1 second
       setTimeout(() => {
-        dispatch(fetchContacts({ page: 1, limit: 50 }))
-      }, 1000)
+        dispatch(fetchContacts({ page: 1, limit: CONTACTS_PER_PAGE }))
+      }, UPLOAD_TIMEOUTS.RELOAD_CONTACTS)
 
       // Clear progress UI after 6 seconds (so user can see the results)
       setTimeout(() => {
         dispatch(clearUploadProgress(data.uploadId))
-      }, 6000)
+      }, UPLOAD_TIMEOUTS.CLEAR_COMPLETED_PROGRESS)
     }
 
     // Handle upload failed
@@ -74,21 +75,21 @@ export const useUploadSocket = () => {
       // Clear progress after 10 seconds
       setTimeout(() => {
         dispatch(clearUploadProgress(data.uploadId))
-      }, 10000)
+      }, UPLOAD_TIMEOUTS.CLEAR_FAILED_PROGRESS)
     }
 
     // Listen to events
-    onCampaignEvent('upload.started', handleStarted)
-    onCampaignEvent('upload.progress', handleProgress)
-    onCampaignEvent('upload.completed', handleCompleted)
-    onCampaignEvent('upload.failed', handleFailed)
+    onCampaignEvent(SOCKET_EVENTS.UPLOAD_STARTED, handleStarted)
+    onCampaignEvent(SOCKET_EVENTS.UPLOAD_PROGRESS, handleProgress)
+    onCampaignEvent(SOCKET_EVENTS.UPLOAD_COMPLETED, handleCompleted)
+    onCampaignEvent(SOCKET_EVENTS.UPLOAD_FAILED, handleFailed)
 
     // Cleanup
     return () => {
-      offCampaignEvent('upload.started', handleStarted)
-      offCampaignEvent('upload.progress', handleProgress)
-      offCampaignEvent('upload.completed', handleCompleted)
-      offCampaignEvent('upload.failed', handleFailed)
+      offCampaignEvent(SOCKET_EVENTS.UPLOAD_STARTED, handleStarted)
+      offCampaignEvent(SOCKET_EVENTS.UPLOAD_PROGRESS, handleProgress)
+      offCampaignEvent(SOCKET_EVENTS.UPLOAD_COMPLETED, handleCompleted)
+      offCampaignEvent(SOCKET_EVENTS.UPLOAD_FAILED, handleFailed)
     }
   }, [dispatch])
 }

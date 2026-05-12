@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { initSocket } from '../sockets/socketClient'
 import { setConnected } from '../store/slices/socketSlice'
+import { SOCKET_EVENTS } from '../constants'
 
 // Hook to initialize socket and track connection status
 export const useSocketConnection = () => {
@@ -23,8 +24,8 @@ export const useSocketConnection = () => {
     }
 
     // Listen to connection events
-    socket.on('connect', handleConnect)
-    socket.on('disconnect', handleDisconnect)
+    socket.on(SOCKET_EVENTS.CONNECT, handleConnect)
+    socket.on(SOCKET_EVENTS.DISCONNECT, handleDisconnect)
 
     // Set initial state if already connected
     if (socket.connected) {
@@ -33,8 +34,8 @@ export const useSocketConnection = () => {
 
     // Cleanup
     return () => {
-      socket.off('connect', handleConnect)
-      socket.off('disconnect', handleDisconnect)
+      socket.off(SOCKET_EVENTS.CONNECT, handleConnect)
+      socket.off(SOCKET_EVENTS.DISCONNECT, handleDisconnect)
     }
   }, [dispatch])
 }

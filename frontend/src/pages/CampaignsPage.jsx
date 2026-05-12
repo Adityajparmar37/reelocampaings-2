@@ -10,16 +10,14 @@ import {
   setCampaignStatus,
 } from "../store/slices/campaignSlice";
 import { onCampaignEvent, offCampaignEvent } from "../sockets/socketClient";
-
-const statusCls = {
-  running: "badge-blue",
-  completed: "badge-green",
-  failed: "badge-red",
-  draft: "badge-gray",
-  queued: "badge-yellow",
-};
-const FILTERS = ["all", "draft", "running", "completed", "failed"];
-const blank = { name: "", messageTemplate: "", audienceFilters: { tags: "" } };
+import {
+  CAMPAIGN_STATUS_CLASSES,
+  CAMPAIGN_FILTERS,
+  DEFAULT_CAMPAIGN_FORM,
+  CAMPAIGN_TABLE_COLUMNS,
+  CAMPAIGNS_PER_PAGE,
+  SOCKET_EVENTS,
+} from "../constants";
 
 export default function CampaignsPage() {
   const dispatch = useDispatch();
@@ -29,10 +27,10 @@ export default function CampaignsPage() {
   const [filter, setFilter] = useState("all");
   const [page, setPage] = useState(1);
   const [modal, setModal] = useState(false);
-  const [form, setForm] = useState(blank);
+  const [form, setForm] = useState(DEFAULT_CAMPAIGN_FORM);
 
   const load = (p = page, s = filter) =>
-    dispatch(fetchCampaigns({ page: p, limit: 20, status: s }));
+    dispatch(fetchCampaigns({ page: p, limit: CAMPAIGNS_PER_PAGE, status: s }));
 
   useEffect(() => {
     load(1);
@@ -56,10 +54,10 @@ export default function CampaignsPage() {
       }
     }
 
-    onCampaignEvent('campaign:update', handleStatusUpdate)
+    onCampaignEvent(SOCKET_EVENTS.CAMPAIGN_UPDATE, handleStatusUpdate)
     
     return () => {
-      offCampaignEvent('campaign:update', handleStatusUpdate)
+      offCampaignEvent(SOCKET_EVENTS.CAMPAIGN_UPDATE, handleStatusUpdate)
     }
   }, [dispatch, page])
 
@@ -76,7 +74,7 @@ export default function CampaignsPage() {
     );
     if (!res.error) {
       setModal(false);
-      setForm(blank);
+      setForm(DEFAULT_CAMPAIGN_FORM);
       load(1);
     }
   };
@@ -114,7 +112,7 @@ export default function CampaignsPage() {
 
       {/* Filter tabs */}
       <div className="flex gap-1 bg-gray-900 p-1 rounded-lg w-fit border border-gray-800">
-        {FILTERS.map((f) => (
+        {CAMPAIGN_FILTERS.map((f) => (
           <button
             key={f}
             onClick={() => {
@@ -132,14 +130,7 @@ export default function CampaignsPage() {
         <table className="table">
           <thead>
             <tr>
-              {[
-                "Name",
-                "Status",
-                "Recipients",
-                "Sent",
-                "Failed",
-                "Actions",
-              ].map((h) => (
+              {CAMPAIGN_TABLE_COLUMNS.map((h) => (
                 <th key={h} className="th">
                   {h}
                 </th>
@@ -186,7 +177,7 @@ export default function CampaignsPage() {
                     </td>
                     <td className="td">
                       <span
-                        className={`badge ${statusCls[c.status] || "badge-gray"}`}>
+                        className={`badge ${CAMPAIGN_STATUS_CLASSES[c.status] || "badge-gray"}`}>
                         {c.status}
                       </span>
                     </td>
@@ -317,7 +308,7 @@ export default function CampaignsPage() {
                   type="button"
                   onClick={() => {
                     setModal(false);
-                    setForm(blank);
+                    setForm(DEFAULT_CAMPAIGN_FORM);
                   }}
                   className="btn-secondary flex-1">
                   Cancel

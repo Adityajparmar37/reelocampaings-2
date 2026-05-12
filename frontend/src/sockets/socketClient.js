@@ -1,4 +1,5 @@
 import { io } from 'socket.io-client'
+import { SOCKET_CONFIG } from '../constants'
 
 // In development, Vite proxy handles /socket.io
 // In production, use the full URL from env
@@ -10,10 +11,7 @@ let socket = null
 export const initSocket = () => {
   if (socket) return socket
 
-  socket = io(SOCKET_URL, {
-    reconnection: true,
-    reconnectionAttempts: 5,
-  })
+  socket = io(SOCKET_URL, SOCKET_CONFIG)
 
   return socket
 }

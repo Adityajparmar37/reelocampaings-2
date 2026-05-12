@@ -3,8 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
 import { fetchGlobalStats, fetchQueueStats, fetchRecentActivity } from '../store/slices/analyticsSlice'
 import { fetchContactStats } from '../store/slices/contactSlice'
-
-const statusCls = { running: 'badge-blue', completed: 'badge-green', failed: 'badge-red', draft: 'badge-gray', queued: 'badge-yellow' }
+import { CAMPAIGN_STATUS_CLASSES, REFRESH_INTERVALS, RECENT_ACTIVITY_LIMITS } from '../constants'
 
 function StatCard({ label, value, sub, accent }) {
   return (
@@ -24,9 +23,9 @@ export default function DashboardPage() {
   useEffect(() => {
     dispatch(fetchGlobalStats())
     dispatch(fetchQueueStats())
-    dispatch(fetchRecentActivity(8))
+    dispatch(fetchRecentActivity(RECENT_ACTIVITY_LIMITS.DASHBOARD_PAGE))
     dispatch(fetchContactStats())
-    const t = setInterval(() => { dispatch(fetchGlobalStats()); dispatch(fetchQueueStats()) }, 15_000)
+    const t = setInterval(() => { dispatch(fetchGlobalStats()); dispatch(fetchQueueStats()) }, REFRESH_INTERVALS.DASHBOARD_PAGE)
     return () => clearInterval(t)
   }, [dispatch])
 
@@ -89,7 +88,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-4 shrink-0">
                   <span className="text-xs text-gray-500 hidden sm:block">{(c.totalRecipients || 0).toLocaleString()} rcpt</span>
                   <span className="text-xs text-emerald-400">{(c.sentCount || 0).toLocaleString()} sent</span>
-                  <span className={`badge ${statusCls[c.status] || 'badge-gray'}`}>{c.status}</span>
+                  <span className={`badge ${CAMPAIGN_STATUS_CLASSES[c.status] || 'badge-gray'}`}>{c.status}</span>
                 </div>
               </Link>
             ))}

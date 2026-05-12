@@ -7,6 +7,18 @@ import {
 } from "../store/slices/contactSlice";
 import { uploadCSV, clearSuccess } from "../store/slices/uploadSlice";
 import { useUploadSocket } from "../hooks/useUploadSocket";
+import {
+  SAMPLE_CONTACTS_CSV,
+  TEST_FAILURE_CONTACTS_CSV,
+  CONTACT_TABLE_COLUMNS,
+  CONTACT_SORT_OPTIONS,
+  CONTACT_SORT_DIRECTIONS,
+  CONTACTS_PER_PAGE,
+  CSV_FILE_COLUMNS,
+  SUCCESS_MESSAGE_TIMEOUT,
+  SEARCH_DEBOUNCE_TIMEOUT,
+  MAX_VISIBLE_TAGS,
+} from "../constants";
 
 export default function ContactsPage() {
   const dispatch = useDispatch();
@@ -29,7 +41,7 @@ export default function ContactsPage() {
   const currentProgress = Object.values(uploadProgress)[0];
 
   const load = (p = page) =>
-    dispatch(fetchContacts({ page: p, limit: 50, ...filters, search }));
+    dispatch(fetchContacts({ page: p, limit: CONTACTS_PER_PAGE, ...filters, search }));
 
   useEffect(() => {
     dispatch(fetchContactStats());
@@ -42,13 +54,13 @@ export default function ContactsPage() {
     const t = setTimeout(() => {
       load(1);
       setPage(1);
-    }, 350);
+    }, SEARCH_DEBOUNCE_TIMEOUT);
     return () => clearTimeout(t);
   }, [search]);
 
   useEffect(() => {
     if (successMessage) {
-      const t = setTimeout(() => dispatch(clearSuccess()), 4000);
+      const t = setTimeout(() => dispatch(clearSuccess()), SUCCESS_MESSAGE_TIMEOUT);
       return () => clearTimeout(t);
     }
   }, [successMessage, dispatch]);
@@ -69,15 +81,7 @@ export default function ContactsPage() {
 
   // Download sample CSV files
   const downloadSampleCSV = () => {
-    const csv = `name,email,phone,tags
-John Doe,john@example.com,1234567890,vip|newsletter
-Jane Smith,jane@example.com,1987654321,active
-Charlie Brown,charlie@example.com,,newsletter
-Alice Johnson,alice@example.com,1122334455,vip|event
-Bob Wilson,bob@example.com,,active|beta
-Aditya Parmar,aditya@example.com,1234567890,`;
-
-    const blob = new Blob([csv], { type: "text/csv" });
+    const blob = new Blob([SAMPLE_CONTACTS_CSV], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -87,15 +91,7 @@ Aditya Parmar,aditya@example.com,1234567890,`;
   };
 
   const downloadFailureTestCSV = () => {
-    const csv = `name,email,phone,tags
-Test Fail 1,fail1@example.com,1234567890,test
-Test Fail 2,fail2@example.com,1234567891,test
-Test Fail 3,fail3@example.com,1234567892,test
-Test Fail 4,fail4@example.com,1234567893,test
-Test Fail 5,fail5@example.com,1234567894,test
-Test Fail 6,fail6@example.com,1234567895,test`;
-
-    const blob = new Blob([csv], { type: "text/csv" });
+    const blob = new Blob([TEST_FAILURE_CONTACTS_CSV], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -155,7 +151,7 @@ Test Fail 6,fail6@example.com,1234567895,test`;
           Drop CSV file here or <span className="text-brand-400">browse</span>
         </p>
         <p className="text-xs text-gray-600 mt-1">
-          Columns: name, email, phone, tags (pipe-separated)
+          Columns: {CSV_FILE_COLUMNS}
         </p>
 
         {/* Sample CSV download buttons */}
@@ -287,15 +283,20 @@ Test Fail 6,fail6@example.com,1234567895,test`;
         <select
           className="input max-w-44"
           onChange={(e) => dispatch(setFilters({ sortBy: e.target.value }))}>
-          <option value="createdAt">Sort: Date</option>
-          <option value="name">Sort: Name</option>
-          <option value="email">Sort: Email</option>
+          {CONTACT_SORT_OPTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
         </select>
         <select
           className="input max-w-36"
           onChange={(e) => dispatch(setFilters({ sortDir: e.target.value }))}>
-          <option value="desc">Desc</option>
-          <option value="asc">Asc</option>
+          {CONTACT_SORT_DIRECTIONS.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -317,7 +318,7 @@ Test Fail 6,fail6@example.com,1234567895,test`;
         <table className="table">
           <thead>
             <tr>
-              {["Name", "Email", "Phone", "Tags", "Created"].map((h) => (
+              {CONTACT_TABLE_COLUMNS.map((h) => (
                 <th key={h} className="th">
                   {h}
                 </th>
@@ -355,14 +356,14 @@ Test Fail 6,fail6@example.com,1234567895,test`;
                   </td>
                   <td className="td">
                     <div className="flex flex-wrap gap-1">
-                      {(c.tags || []).slice(0, 4).map((t) => (
+                      {(c.tags || []).slice(0, MAX_VISIBLE_TAGS).map((t) => (
                         <span key={t} className="badge badge-blue">
                           {t}
                         </span>
                       ))}
-                      {(c.tags || []).length > 4 && (
+                      {(c.tags || []).length > MAX_VISIBLE_TAGS && (
                         <span className="text-xs text-gray-600">
-                          +{c.tags.length - 4}
+                          +{c.tags.length - MAX_VISIBLE_TAGS}
                         </span>
                       )}
                     </div>

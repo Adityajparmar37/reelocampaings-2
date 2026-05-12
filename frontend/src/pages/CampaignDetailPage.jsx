@@ -5,8 +5,7 @@ import { fetchCampaign, launchCampaign } from '../store/slices/campaignSlice'
 import { fetchCampaignAnalytics } from '../store/slices/analyticsSlice'
 import { useCampaignSocket } from '../hooks/useCampaignSocket'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
-
-const statusCls = { running: 'badge-blue', completed: 'badge-green', failed: 'badge-red', draft: 'badge-gray' }
+import { CAMPAIGN_STATUS_CLASSES, CHART_COLORS, REFRESH_INTERVALS } from '../constants'
 
 export default function CampaignDetailPage() {
   const { id }     = useParams()
@@ -30,7 +29,7 @@ export default function CampaignDetailPage() {
   // Poll analytics while running
   useEffect(() => {
     if (campaign?.status !== 'running') return
-    const t = setInterval(() => dispatch(fetchCampaignAnalytics(id)), 5_000)
+    const t = setInterval(() => dispatch(fetchCampaignAnalytics(id)), REFRESH_INTERVALS.CAMPAIGN_DETAIL_RUNNING)
     return () => clearInterval(t)
   }, [campaign?.status, id, dispatch])
 
@@ -54,9 +53,9 @@ export default function CampaignDetailPage() {
   const pct     = total > 0 ? ((sent + failed) / total * 100) : 0
 
   const chartData = [
-    { name: 'Sent',    value: sent,    fill: '#10b981' },
-    { name: 'Failed',  value: failed,  fill: '#ef4444' },
-    { name: 'Pending', value: pending, fill: '#4b5563' },
+    { name: 'Sent',    value: sent,    fill: CHART_COLORS.sent },
+    { name: 'Failed',  value: failed,  fill: CHART_COLORS.failed },
+    { name: 'Pending', value: pending, fill: CHART_COLORS.pending },
   ]
 
   const isRunning = campaign.status === 'running'
@@ -69,7 +68,7 @@ export default function CampaignDetailPage() {
           <button onClick={() => navigate(-1)} className="text-sm text-gray-500 hover:text-gray-300 mb-2 transition-colors">← Back</button>
           <h2 className="text-2xl font-bold text-white">{campaign.name}</h2>
           <div className="flex items-center gap-3 mt-2 flex-wrap">
-            <span className={`badge ${statusCls[campaign.status] || 'badge-gray'} text-sm px-3 py-1`}>{campaign.status?.toUpperCase()}</span>
+            <span className={`badge ${CAMPAIGN_STATUS_CLASSES[campaign.status] || 'badge-gray'} text-sm px-3 py-1`}>{campaign.status?.toUpperCase()}</span>
             <span className="text-sm text-gray-500">{total.toLocaleString()} recipients</span>
             <span className="text-xs text-gray-600">{new Date(campaign.createdAt).toLocaleString()}</span>
           </div>

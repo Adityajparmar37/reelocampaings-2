@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useDispatch } from 'react-redux'
 import { subscribeToCampaign, unsubscribeFromCampaign, onCampaignEvent, offCampaignEvent } from '../sockets/socketClient'
 import { setCampaignStatus, updateCampaignProgress } from '../store/slices/campaignSlice'
+import { SOCKET_EVENTS } from '../constants'
 
 // Custom hook to listen to campaign updates
 export const useCampaignSocket = (campaignId) => {
@@ -39,17 +40,17 @@ export const useCampaignSocket = (campaignId) => {
     }
 
     // Listen to events
-    onCampaignEvent('campaign.started', handleStarted)
-    onCampaignEvent('campaign.batch.processed', handleBatchProcessed)
-    onCampaignEvent('campaign.completed', handleCompleted)
-    onCampaignEvent('campaign.failed', handleFailed)
+    onCampaignEvent(SOCKET_EVENTS.CAMPAIGN_STARTED, handleStarted)
+    onCampaignEvent(SOCKET_EVENTS.CAMPAIGN_BATCH_PROCESSED, handleBatchProcessed)
+    onCampaignEvent(SOCKET_EVENTS.CAMPAIGN_COMPLETED, handleCompleted)
+    onCampaignEvent(SOCKET_EVENTS.CAMPAIGN_FAILED, handleFailed)
 
     // Cleanup on unmount
     return () => {
-      offCampaignEvent('campaign.started', handleStarted)
-      offCampaignEvent('campaign.batch.processed', handleBatchProcessed)
-      offCampaignEvent('campaign.completed', handleCompleted)
-      offCampaignEvent('campaign.failed', handleFailed)
+      offCampaignEvent(SOCKET_EVENTS.CAMPAIGN_STARTED, handleStarted)
+      offCampaignEvent(SOCKET_EVENTS.CAMPAIGN_BATCH_PROCESSED, handleBatchProcessed)
+      offCampaignEvent(SOCKET_EVENTS.CAMPAIGN_COMPLETED, handleCompleted)
+      offCampaignEvent(SOCKET_EVENTS.CAMPAIGN_FAILED, handleFailed)
       unsubscribeFromCampaign(campaignId)
     }
   }, [campaignId, dispatch])
