@@ -34,10 +34,8 @@ export default function ContactsPage() {
   const [search, setSearch] = useState("");
   const [dragging, setDragging] = useState(false);
 
-  // Listen to real-time upload progress
   useUploadSocket();
 
-  // Get current upload progress (latest upload)
   const currentProgress = Object.values(uploadProgress)[0];
 
   const load = (p = page) =>
@@ -79,7 +77,6 @@ export default function ContactsPage() {
     load(p);
   };
 
-  // Download sample CSV files
   const downloadSampleCSV = () => {
     const blob = new Blob([SAMPLE_CONTACTS_CSV], { type: "text/csv" });
     const url = window.URL.createObjectURL(blob);
@@ -102,7 +99,6 @@ export default function ContactsPage() {
 
   return (
     <div className="space-y-5 max-w-7xl">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white">Contacts</h2>
@@ -128,7 +124,6 @@ export default function ContactsPage() {
         />
       </div>
 
-      {/* Drop zone */}
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -154,7 +149,6 @@ export default function ContactsPage() {
           Columns: {CSV_FILE_COLUMNS}
         </p>
 
-        {/* Sample CSV download buttons */}
         <div
           className="flex items-center justify-center gap-3 mt-4"
           onClick={(e) => e.stopPropagation()}>
@@ -173,7 +167,6 @@ export default function ContactsPage() {
         </div>
       </div>
 
-      {/* Alerts */}
       {successMessage && (
         <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-4 py-3 rounded-lg text-sm flex items-center gap-2 animate-slide-up">
           <span>✓</span> {successMessage}
@@ -185,7 +178,6 @@ export default function ContactsPage() {
         </div>
       )}
 
-      {/* Real-time Upload Progress */}
       {currentProgress && currentProgress.status === "processing" && (
         <div className="card animate-slide-up">
           <div className="flex items-center justify-between mb-3">
@@ -200,7 +192,6 @@ export default function ContactsPage() {
             </span>
           </div>
 
-          {/* Progress Bar */}
           <div className="w-full bg-gray-800 rounded-full h-3 overflow-hidden mb-4">
             <div
               className="h-3 bg-brand-500 rounded-full transition-all duration-500 ease-out"
@@ -213,7 +204,6 @@ export default function ContactsPage() {
             />
           </div>
 
-          {/* Stats */}
           <div className="grid grid-cols-4 gap-4 text-center">
             <div>
               <p className="text-xl font-bold text-white">
@@ -243,7 +233,6 @@ export default function ContactsPage() {
         </div>
       )}
 
-      {/* Upload Completed */}
       {currentProgress && currentProgress.status === "completed" && (
         <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-4 py-3 rounded-lg text-sm animate-slide-up">
           <div className="flex items-center justify-between">
@@ -258,7 +247,6 @@ export default function ContactsPage() {
         </div>
       )}
 
-      {/* Upload Failed */}
       {currentProgress && currentProgress.status === "failed" && (
         <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
           <span className="flex items-center gap-2">
@@ -267,7 +255,6 @@ export default function ContactsPage() {
         </div>
       )}
 
-      {/* Filters */}
       <div className="flex flex-wrap gap-3">
         <input
           className="input max-w-xs"
@@ -313,7 +300,6 @@ export default function ContactsPage() {
         to try it out.
       </div>
 
-      {/* Table */}
       <div className="table-container">
         <table className="table">
           <thead>
@@ -378,7 +364,6 @@ export default function ContactsPage() {
         </table>
       </div>
 
-      {/* Pagination */}
       {meta.totalPages > 1 && (
         <div className="flex items-center justify-between text-sm">
           <span className="text-gray-500">

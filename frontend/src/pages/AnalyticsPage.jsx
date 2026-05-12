@@ -39,7 +39,6 @@ export default function AnalyticsPage() {
         <p className="text-gray-500 text-sm mt-0.5">System-wide metrics · auto-refreshes every 10s</p>
       </div>
 
-      {/* Global KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Total Campaigns',  value: stats?.totalCampaigns,                  cls: 'text-brand-400' },
@@ -55,7 +54,6 @@ export default function AnalyticsPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Status pie */}
         <div className="card">
           <h3 className="font-semibold text-white mb-4">Campaign Status Distribution</h3>
           {pieData.length > 0 ? (
@@ -83,7 +81,6 @@ export default function AnalyticsPage() {
           )}
         </div>
 
-        {/* Queue */}
         <div className="card">
           <h3 className="font-semibold text-white mb-4">BullMQ Queue Metrics</h3>
           {queue ? (
@@ -112,7 +109,6 @@ export default function AnalyticsPage() {
         </div>
       </div>
 
-      {/* Bar chart */}
       {barData.length > 0 && (
         <div className="card">
           <h3 className="font-semibold text-white mb-4">Campaign Performance (Recent 10)</h3>

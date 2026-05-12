@@ -18,7 +18,6 @@ export default function CampaignDetailPage() {
   const analytics = campaignAnalytics[id]
   const lp        = progress[id]
 
-  // Subscribe to real-time campaign updates
   useCampaignSocket(id)
 
   useEffect(() => {
@@ -26,7 +25,6 @@ export default function CampaignDetailPage() {
     dispatch(fetchCampaignAnalytics(id))
   }, [id, dispatch])
 
-  // Poll analytics while running
   useEffect(() => {
     if (campaign?.status !== 'running') return
     const t = setInterval(() => dispatch(fetchCampaignAnalytics(id)), REFRESH_INTERVALS.CAMPAIGN_DETAIL_RUNNING)
@@ -62,7 +60,6 @@ export default function CampaignDetailPage() {
 
   return (
     <div className="space-y-6 max-w-5xl">
-      {/* Back + header */}
       <div className="flex items-start justify-between gap-4">
         <div>
           <button onClick={() => navigate(-1)} className="text-sm text-gray-500 hover:text-gray-300 mb-2 transition-colors">← Back</button>
@@ -80,7 +77,6 @@ export default function CampaignDetailPage() {
         )}
       </div>
 
-      {/* Live progress */}
       {['running', 'completed', 'failed'].includes(campaign.status) && (
         <div className="card">
           <div className="flex items-center justify-between mb-3">
@@ -113,7 +109,6 @@ export default function CampaignDetailPage() {
         </div>
       )}
 
-      {/* Analytics chart */}
       {analytics && total > 0 && (
         <div className="card">
           <h3 className="font-semibold text-white mb-4">Delivery Breakdown</h3>
@@ -145,13 +140,11 @@ export default function CampaignDetailPage() {
         </div>
       )}
 
-      {/* Message template */}
       <div className="card">
         <h3 className="font-semibold text-white mb-3">Message Template</h3>
         <pre className="text-sm text-gray-300 bg-gray-800/60 rounded-lg p-4 whitespace-pre-wrap font-mono leading-relaxed">{campaign.messageTemplate}</pre>
       </div>
 
-      {/* Audience */}
       <div className="card">
         <h3 className="font-semibold text-white mb-3">Audience Filters</h3>
         {!campaign.audienceFilters || Object.keys(campaign.audienceFilters).length === 0 || campaign.audienceFilters.tags?.length === 0 ? (

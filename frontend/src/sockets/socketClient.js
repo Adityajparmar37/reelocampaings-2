@@ -1,13 +1,10 @@
 import { io } from 'socket.io-client'
 import { SOCKET_CONFIG } from '../constants'
 
-// In development, Vite proxy handles /socket.io
-// In production, use the full URL from env
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || ''
 
 let socket = null
 
-// Initialize socket connection
 export const initSocket = () => {
   if (socket) return socket
 
@@ -16,14 +13,12 @@ export const initSocket = () => {
   return socket
 }
 
-// Subscribe to campaign updates
 export const subscribeToCampaign = (campaignId) => {
   if (!socket) initSocket()
   socket.emit('subscribe:campaign', campaignId)
   console.log(`[Socket] Subscribed to campaign: ${campaignId}`)
 }
 
-// Unsubscribe from campaign updates
 export const unsubscribeFromCampaign = (campaignId) => {
   if (socket) {
     socket.emit('unsubscribe:campaign', campaignId)
@@ -31,18 +26,15 @@ export const unsubscribeFromCampaign = (campaignId) => {
   }
 }
 
-// Listen to campaign events
 export const onCampaignEvent = (eventName, callback) => {
   if (!socket) initSocket()
   socket.on(eventName, callback)
 }
 
-// Remove event listener
 export const offCampaignEvent = (eventName, callback) => {
   if (socket) {
     socket.off(eventName, callback)
   }
 }
 
-// Get socket instance
 export const getSocket = () => socket
