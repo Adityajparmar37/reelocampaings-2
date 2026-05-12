@@ -3,22 +3,43 @@
 const Redis = require('ioredis');
 const env = require('./env');
 
-const opts = {
-  host: env.REDIS_HOST,
-  port: env.REDIS_PORT,
-  password: env.REDIS_PASSWORD || undefined,
-  retryStrategy: (times) => Math.min(times * 100, 3000),
-  enableReadyCheck: true,
-  maxRetriesPerRequest: 3,
+const redisOptions = {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
 };
 
-const redisClient     = new Redis(opts);
-const redisSubscriber = new Redis(opts);
-const redisPublisher  = new Redis(opts);
+const redisClient = new Redis(env.REDIS_URL, redisOptions);
 
-redisClient.on('connect',     () => console.log('[Redis] Client connected'));
-redisClient.on('error',       (e) => console.error('[Redis] Client error:', e.message));
-redisSubscriber.on('connect', () => console.log('[Redis] Subscriber connected'));
-redisPublisher.on('connect',  () => console.log('[Redis] Publisher connected'));
+const redisSubscriber = new Redis(env.REDIS_URL, redisOptions);
 
-module.exports = { redisClient, redisSubscriber, redisPublisher };
+const redisPublisher = new Redis(env.REDIS_URL, redisOptions);
+
+redisClient.on('connect', () => {
+  console.log('[Redis] Client connected');
+});
+
+redisClient.on('error', (e) => {
+  console.error('[Redis] Client error:', e.message);
+});
+
+redisSubscriber.on('connect', () => {
+  console.log('[Redis] Subscriber connected');
+});
+
+redisSubscriber.on('error', (e) => {
+  console.error('[Redis] Subscriber error:', e.message);
+});
+
+redisPublisher.on('connect', () => {
+  console.log('[Redis] Publisher connected');
+});
+
+redisPublisher.on('error', (e) => {
+  console.error('[Redis] Publisher error:', e.message);
+});
+
+module.exports = {
+  redisClient,
+  redisSubscriber,
+  redisPublisher,
+};
