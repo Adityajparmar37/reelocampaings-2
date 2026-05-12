@@ -22,6 +22,8 @@ Express API + Socket.IO Gateway (Port 4000)
               │        │
               └── Socket.IO → Frontend Clients
 ```
+## Flow Daigram
+<img width="856" height="466" alt="Screenshot 2026-05-12 at 16 27 43" src="https://github.com/user-attachments/assets/30909b29-d546-4ce3-915b-5d2735c07550" />
 
 ## Tech Stack
 
