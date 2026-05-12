@@ -8,6 +8,7 @@ const { httpLogger } = require('./middlewares/logger');
 const { rateLimiter } = require('./middlewares/rateLimiter');
 const { errorHandler } = require('./middlewares/errorHandler');
 const routes = require('./routes/index');
+require('./workers/campaign.worker');
 
 const createApp = () => {
   const app = express();
