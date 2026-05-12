@@ -5,12 +5,14 @@ const csvParser = require('csv-parser');
 const uploadsRepo = require('../../queries/uploads.queries');
 const contactsRepo = require('../../queries/contacts.queries');
 const { logger } = require('../../middlewares/logger');
+const { sendToAll } = require('../../socket/socket.gateway');
 
 const CHUNK_SIZE = 1000; // rows per bulkWrite batch
 
 /**
  * Streams a CSV file, parses rows in chunks, and bulk-upserts contacts.
  * Supports 50k+ contacts without memory blowup via streaming.
+ * Emits real-time progress via Socket.IO.
  */
 const processCSV = async (uploadId, filePath) => {
   let totalRows = 0;
@@ -19,6 +21,9 @@ const processCSV = async (uploadId, filePath) => {
   let failedRows = 0;
   const errors = [];
   const rowBuffer = [];
+
+  // Emit upload started event
+  sendToAll('upload.started', { uploadId, status: 'processing' });
 
   const flushBuffer = async () => {
     if (!rowBuffer.length) return;
@@ -32,12 +37,25 @@ const processCSV = async (uploadId, filePath) => {
       errors.push({ message: err.message, rows: batch.length });
     }
 
+    const processedRows = insertedRows + updatedRows + failedRows;
+
     await uploadsRepo.updateUploadProgress(uploadId, {
       totalRows,
-      processedRows: insertedRows + updatedRows + failedRows,
+      processedRows,
       insertedRows,
       updatedRows,
       failedRows,
+    });
+
+    // Emit progress event
+    sendToAll('upload.progress', {
+      uploadId,
+      totalRows,
+      processedRows,
+      insertedRows,
+      updatedRows,
+      failedRows,
+      status: 'processing',
     });
   };
 
@@ -83,15 +101,30 @@ const processCSV = async (uploadId, filePath) => {
       try {
         await flushBuffer(); // flush remaining rows
         const finalStatus = failedRows === totalRows && totalRows > 0 ? 'failed' : 'completed';
+        const processedRows = insertedRows + updatedRows + failedRows;
+        
         await uploadsRepo.updateUploadProgress(uploadId, {
           totalRows,
-          processedRows: insertedRows + updatedRows + failedRows,
+          processedRows,
           insertedRows,
           updatedRows,
           failedRows,
           errors: errors.slice(0, 50),
           status: finalStatus,
         });
+
+        // Emit completion event
+        sendToAll('upload.completed', {
+          uploadId,
+          totalRows,
+          processedRows,
+          insertedRows,
+          updatedRows,
+          failedRows,
+          status: finalStatus,
+          errors: errors.slice(0, 10),
+        });
+
         // Clean up temp file
         fs.unlink(filePath, () => {});
         resolve({ totalRows, insertedRows, updatedRows, failedRows });
@@ -102,6 +135,14 @@ const processCSV = async (uploadId, filePath) => {
 
     stream.on('error', async (err) => {
       await uploadsRepo.updateUploadProgress(uploadId, { status: 'failed', errors: [{ message: err.message }] });
+      
+      // Emit failure event
+      sendToAll('upload.failed', {
+        uploadId,
+        status: 'failed',
+        error: err.message,
+      });
+
       fs.unlink(filePath, () => {});
       reject(err);
     });

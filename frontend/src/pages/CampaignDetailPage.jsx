@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchCampaign, launchCampaign } from '../store/slices/campaignSlice'
 import { fetchCampaignAnalytics } from '../store/slices/analyticsSlice'
-import { subscribeToCampaign, unsubscribeFromCampaign } from '../sockets/socketClient'
+import { useCampaignSocket } from '../hooks/useCampaignSocket'
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 
 const statusCls = { running: 'badge-blue', completed: 'badge-green', failed: 'badge-red', draft: 'badge-gray' }
@@ -19,11 +19,12 @@ export default function CampaignDetailPage() {
   const analytics = campaignAnalytics[id]
   const lp        = progress[id]
 
+  // Subscribe to real-time campaign updates
+  useCampaignSocket(id)
+
   useEffect(() => {
     dispatch(fetchCampaign(id))
     dispatch(fetchCampaignAnalytics(id))
-    subscribeToCampaign(id)
-    return () => unsubscribeFromCampaign(id)
   }, [id, dispatch])
 
   // Poll analytics while running

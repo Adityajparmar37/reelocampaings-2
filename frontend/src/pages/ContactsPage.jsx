@@ -2,15 +2,22 @@ import { useEffect, useState, useRef } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { fetchContacts, fetchContactStats, setFilters } from '../store/slices/contactSlice'
 import { uploadCSV, clearSuccess } from '../store/slices/uploadSlice'
+import { useUploadSocket } from '../hooks/useUploadSocket'
 
 export default function ContactsPage() {
   const dispatch      = useDispatch()
   const { items, meta, loading, filters } = useSelector((s) => s.contacts)
-  const { uploading, successMessage, error: uploadError } = useSelector((s) => s.uploads)
+  const { uploading, successMessage, error: uploadError, uploadProgress } = useSelector((s) => s.uploads)
   const fileRef       = useRef()
   const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
   const [dragging, setDragging] = useState(false)
+
+  // Listen to real-time upload progress
+  useUploadSocket()
+
+  // Get current upload progress (latest upload)
+  const currentProgress = Object.values(uploadProgress)[0]
 
   const load = (p = page) =>
     dispatch(fetchContacts({ page: p, limit: 50, ...filters, search }))
@@ -29,8 +36,7 @@ export default function ContactsPage() {
   const handleFile = async (file) => {
     if (!file) return
     if (!file.name.endsWith('.csv')) { alert('Please select a .csv file'); return }
-    const res = await dispatch(uploadCSV(file))
-    if (!res.error) setTimeout(() => load(1), 2000)
+    await dispatch(uploadCSV(file))
   }
 
   const gotoPage = (p) => { setPage(p); load(p) }
@@ -73,6 +79,77 @@ export default function ContactsPage() {
       )}
       {uploadError && (
         <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">{uploadError}</div>
+      )}
+
+      {/* Real-time Upload Progress */}
+      {currentProgress && currentProgress.status === 'processing' && (
+        <div className="card animate-slide-up">
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="font-semibold text-white flex items-center gap-2">
+              📤 Processing CSV Upload
+              <span className="w-2 h-2 bg-brand-400 rounded-full animate-pulse" />
+            </h3>
+            <span className="text-sm text-brand-400 font-mono font-bold">
+              {currentProgress.totalRows > 0 
+                ? `${((currentProgress.processedRows / currentProgress.totalRows) * 100).toFixed(1)}%`
+                : 'Starting...'}
+            </span>
+          </div>
+          
+          {/* Progress Bar */}
+          <div className="w-full bg-gray-800 rounded-full h-3 overflow-hidden mb-4">
+            <div
+              className="h-3 bg-brand-500 rounded-full transition-all duration-500 ease-out"
+              style={{ 
+                width: currentProgress.totalRows > 0 
+                  ? `${(currentProgress.processedRows / currentProgress.totalRows) * 100}%` 
+                  : '0%' 
+              }}
+            />
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-4 gap-4 text-center">
+            <div>
+              <p className="text-xl font-bold text-white">{currentProgress.totalRows?.toLocaleString() || 0}</p>
+              <p className="text-xs text-gray-500 mt-1">Total Rows</p>
+            </div>
+            <div>
+              <p className="text-xl font-bold text-emerald-400">{currentProgress.insertedRows?.toLocaleString() || 0}</p>
+              <p className="text-xs text-gray-500 mt-1">Inserted</p>
+            </div>
+            <div>
+              <p className="text-xl font-bold text-blue-400">{currentProgress.updatedRows?.toLocaleString() || 0}</p>
+              <p className="text-xs text-gray-500 mt-1">Updated</p>
+            </div>
+            <div>
+              <p className="text-xl font-bold text-red-400">{currentProgress.failedRows?.toLocaleString() || 0}</p>
+              <p className="text-xs text-gray-500 mt-1">Failed</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Upload Completed */}
+      {currentProgress && currentProgress.status === 'completed' && (
+        <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-4 py-3 rounded-lg text-sm animate-slide-up">
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-2">
+              <span>✓</span> 
+              Upload completed! Inserted: {currentProgress.insertedRows}, Updated: {currentProgress.updatedRows}
+              {currentProgress.failedRows > 0 && `, Failed: ${currentProgress.failedRows}`}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Upload Failed */}
+      {currentProgress && currentProgress.status === 'failed' && (
+        <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
+          <span className="flex items-center gap-2">
+            <span>✗</span> Upload failed: {currentProgress.error}
+          </span>
+        </div>
       )}
 
       {/* Filters */}

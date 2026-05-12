@@ -1,6 +1,7 @@
-name,email,phone,tags,metadata
-John Doe,john@example.com,+1234567890,vip|newsletter,{"source":"web","region":"NA"}
-Jane Smith,jane@example.com,+1987654321,active,{"source":"referral"}
-Charlie Brown,charlie@example.com,,newsletter,{}
-Alice Johnson,alice@example.com,+1122334455,vip|event,{"company":"Acme Corp"}
-Bob Wilson,bob@example.com,,active|beta,{"role":"admin"}
+name,email,phone,tags,metadata,
+John Doe,john@example.com,1234567890,vip|newsletter,"{""source"":""web""","region:""NA""}"
+Jane Smith,jane@example.com,1987654321,active,"{""source"":""referral""}",
+Charlie Brown,charlie@example.com,,newsletter,{},
+Alice Johnson,alice@example.com,1122334455,vip|event,"{""company"":""Acme Corp""}",
+Bob Wilson,bob@example.com,,active|beta,"{""role"":""admin""}",
+Aditya,aditya parmar,1234567890,,,

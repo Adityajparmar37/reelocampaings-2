@@ -6,7 +6,7 @@ const env = require('./config/env');
 const { connect: connectDB } = require('./config/db');
 const { setupIndexes } = require('./db/indexes');
 const { createApp } = require('./app');
-const { initSocketGateway, gateway } = require('./socket/socket.gateway');
+const { initSocket } = require('./socket/socket.gateway');
 const { startSubscriber } = require('./pubsub/subscriber');
 
 const start = async () => {
@@ -21,11 +21,11 @@ const start = async () => {
     // 3. Create HTTP server
     const httpServer = http.createServer(app);
 
-    // 4. Init Socket.IO gateway (attaches to httpServer)
-    initSocketGateway(httpServer);
+    // 4. Init Socket.IO (attaches to httpServer)
+    initSocket(httpServer);
 
-    // 5. Start Redis Pub/Sub subscriber → routes events to socket gateway
-    startSubscriber(gateway);
+    // 5. Start Redis Pub/Sub subscriber
+    startSubscriber();
 
     // 6. Start listening
     httpServer.listen(env.PORT, () => {

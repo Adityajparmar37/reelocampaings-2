@@ -1,6 +1,5 @@
-import { useEffect } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { initSocket } from './sockets/socketClient'
+import { useSocketConnection } from './hooks/useSocketConnection'
 import MainLayout from './layouts/MainLayout'
 import DashboardPage from './pages/DashboardPage'
 import CampaignsPage from './pages/CampaignsPage'
@@ -9,7 +8,9 @@ import ContactsPage from './pages/ContactsPage'
 import AnalyticsPage from './pages/AnalyticsPage'
 
 export default function App() {
-  useEffect(() => { initSocket() }, [])
+  // Initialize socket and track connection status
+  useSocketConnection()
+
   return (
     <BrowserRouter>
       <Routes>
