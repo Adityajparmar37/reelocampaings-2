@@ -8,6 +8,7 @@ const redisOptions = {
   maxRetriesPerRequest: null,
   enableReadyCheck: false,
 };
+console.log(env.REDIS_URL,'env.REDIS_URL')
 
 // BullMQ connection
 const bullMQConnection = new Redis(env.REDIS_URL, redisOptions);

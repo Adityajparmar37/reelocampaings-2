@@ -8,6 +8,8 @@ const redisOptions = {
   enableReadyCheck: false,
 };
 
+console.log(env.REDIS_URL,'env.REDIS_URL')
+
 const redisClient = new Redis(env.REDIS_URL, redisOptions);
 
 const redisSubscriber = new Redis(env.REDIS_URL, redisOptions);
