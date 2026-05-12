@@ -15,6 +15,7 @@ const env = {
   RATE_LIMIT_WINDOW_MS: parseInt(process.env.RATE_LIMIT_WINDOW_MS || '60000', 10),
   RATE_LIMIT_MAX: parseInt(process.env.RATE_LIMIT_MAX || '200', 10),
   LOG_LEVEL: process.env.LOG_LEVEL || 'info',
+  REDIS_URL: process.env.REDIS_URL
 };
 
 module.exports = env;

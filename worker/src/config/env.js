@@ -10,6 +10,7 @@ const env = {
   QUEUE_NAME: process.env.QUEUE_NAME || 'campaign_queue',
   WORKER_CONCURRENCY: parseInt(process.env.WORKER_CONCURRENCY || '5', 10),
   PUBSUB_CHANNEL_PREFIX: process.env.PUBSUB_CHANNEL_PREFIX || 'campaign',
+  REDIS_URL: process.env.REDIS_URL
 };
 
 module.exports = env;
