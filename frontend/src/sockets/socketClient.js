@@ -1,7 +1,11 @@
 import { io } from 'socket.io-client'
 import { SOCKET_CONFIG } from '../constants'
 
+// In production, use the full backend URL from environment variable
+// In development, use empty string (Vite proxy handles it)
 const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || ''
+
+console.log('[Socket] Connecting to:', SOCKET_URL || 'relative path (proxy)')
 
 let socket = null
 
@@ -9,6 +13,14 @@ export const initSocket = () => {
   if (socket) return socket
 
   socket = io(SOCKET_URL, SOCKET_CONFIG)
+
+  socket.on('connect', () => {
+    console.log('[Socket] Connected successfully')
+  })
+
+  socket.on('connect_error', (error) => {
+    console.error('[Socket] Connection error:', error.message)
+  })
 
   return socket
 }
