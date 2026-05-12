@@ -1,45 +1,108 @@
-import { useEffect, useState, useRef } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
-import { fetchContacts, fetchContactStats, setFilters } from '../store/slices/contactSlice'
-import { uploadCSV, clearSuccess } from '../store/slices/uploadSlice'
-import { useUploadSocket } from '../hooks/useUploadSocket'
+import { useEffect, useState, useRef } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  fetchContacts,
+  fetchContactStats,
+  setFilters,
+} from "../store/slices/contactSlice";
+import { uploadCSV, clearSuccess } from "../store/slices/uploadSlice";
+import { useUploadSocket } from "../hooks/useUploadSocket";
 
 export default function ContactsPage() {
-  const dispatch      = useDispatch()
-  const { items, meta, loading, filters } = useSelector((s) => s.contacts)
-  const { uploading, successMessage, error: uploadError, uploadProgress } = useSelector((s) => s.uploads)
-  const fileRef       = useRef()
-  const [page, setPage] = useState(1)
-  const [search, setSearch] = useState('')
-  const [dragging, setDragging] = useState(false)
+  const dispatch = useDispatch();
+  const { items, meta, loading, filters } = useSelector((s) => s.contacts);
+  const {
+    uploading,
+    successMessage,
+    error: uploadError,
+    uploadProgress,
+  } = useSelector((s) => s.uploads);
+  const fileRef = useRef();
+  const [page, setPage] = useState(1);
+  const [search, setSearch] = useState("");
+  const [dragging, setDragging] = useState(false);
 
   // Listen to real-time upload progress
-  useUploadSocket()
+  useUploadSocket();
 
   // Get current upload progress (latest upload)
-  const currentProgress = Object.values(uploadProgress)[0]
+  const currentProgress = Object.values(uploadProgress)[0];
 
   const load = (p = page) =>
-    dispatch(fetchContacts({ page: p, limit: 50, ...filters, search }))
-
-  useEffect(() => { dispatch(fetchContactStats()) }, [dispatch])
-  useEffect(() => { load(1); setPage(1) }, [filters.tags, filters.sortBy, filters.sortDir])
-  useEffect(() => {
-    const t = setTimeout(() => { load(1); setPage(1) }, 350)
-    return () => clearTimeout(t)
-  }, [search])
+    dispatch(fetchContacts({ page: p, limit: 50, ...filters, search }));
 
   useEffect(() => {
-    if (successMessage) { const t = setTimeout(() => dispatch(clearSuccess()), 4000); return () => clearTimeout(t) }
-  }, [successMessage, dispatch])
+    dispatch(fetchContactStats());
+  }, [dispatch]);
+  useEffect(() => {
+    load(1);
+    setPage(1);
+  }, [filters.tags, filters.sortBy, filters.sortDir]);
+  useEffect(() => {
+    const t = setTimeout(() => {
+      load(1);
+      setPage(1);
+    }, 350);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  useEffect(() => {
+    if (successMessage) {
+      const t = setTimeout(() => dispatch(clearSuccess()), 4000);
+      return () => clearTimeout(t);
+    }
+  }, [successMessage, dispatch]);
 
   const handleFile = async (file) => {
-    if (!file) return
-    if (!file.name.endsWith('.csv')) { alert('Please select a .csv file'); return }
-    await dispatch(uploadCSV(file))
-  }
+    if (!file) return;
+    if (!file.name.endsWith(".csv")) {
+      alert("Please select a .csv file");
+      return;
+    }
+    await dispatch(uploadCSV(file));
+  };
 
-  const gotoPage = (p) => { setPage(p); load(p) }
+  const gotoPage = (p) => {
+    setPage(p);
+    load(p);
+  };
+
+  // Download sample CSV files
+  const downloadSampleCSV = () => {
+    const csv = `name,email,phone,tags
+John Doe,john@example.com,1234567890,vip|newsletter
+Jane Smith,jane@example.com,1987654321,active
+Charlie Brown,charlie@example.com,,newsletter
+Alice Johnson,alice@example.com,1122334455,vip|event
+Bob Wilson,bob@example.com,,active|beta
+Aditya Parmar,aditya@example.com,1234567890,`;
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "sample_contacts.csv";
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const downloadFailureTestCSV = () => {
+    const csv = `name,email,phone,tags
+Test Fail 1,fail1@example.com,1234567890,test
+Test Fail 2,fail2@example.com,1234567891,test
+Test Fail 3,fail3@example.com,1234567892,test
+Test Fail 4,fail4@example.com,1234567893,test
+Test Fail 5,fail5@example.com,1234567894,test
+Test Fail 6,fail6@example.com,1234567895,test`;
+
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "test_failure_contacts.csv";
+    a.click();
+    window.URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="space-y-5 max-w-7xl">
@@ -47,28 +110,71 @@ export default function ContactsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-white">Contacts</h2>
-          <p className="text-gray-500 text-sm">{meta.total.toLocaleString()} total contacts</p>
+          <p className="text-gray-500 text-sm">
+            {meta.total.toLocaleString()} total contacts
+          </p>
         </div>
-        <button className="btn-primary" onClick={() => fileRef.current?.click()} disabled={uploading}>
-          {uploading ? '⏳ Uploading…' : '📤 Upload CSV'}
+        <button
+          className="btn-primary"
+          onClick={() => fileRef.current?.click()}
+          disabled={uploading}>
+          {uploading ? "⏳ Uploading…" : "📤 Upload CSV"}
         </button>
-        <input ref={fileRef} type="file" accept=".csv" className="hidden"
-          onChange={(e) => { handleFile(e.target.files[0]); e.target.value = '' }} />
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".csv"
+          className="hidden"
+          onChange={(e) => {
+            handleFile(e.target.files[0]);
+            e.target.value = "";
+          }}
+        />
       </div>
 
       {/* Drop zone */}
       <div
-        onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
         onDragLeave={() => setDragging(false)}
-        onDrop={(e) => { e.preventDefault(); setDragging(false); handleFile(e.dataTransfer.files[0]) }}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragging(false);
+          handleFile(e.dataTransfer.files[0]);
+        }}
         onClick={() => fileRef.current?.click()}
         className={`border-2 border-dashed rounded-xl px-6 py-8 text-center cursor-pointer transition-all duration-200 ${
-          dragging ? 'border-brand-500 bg-brand-500/10 scale-[1.01]' : 'border-gray-700 hover:border-gray-600 hover:bg-gray-900/40'
-        }`}
-      >
+          dragging
+            ? "border-brand-500 bg-brand-500/10 scale-[1.01]"
+            : "border-gray-700 hover:border-gray-600 hover:bg-gray-900/40"
+        }`}>
         <p className="text-3xl mb-2">📄</p>
-        <p className="text-sm text-gray-400 font-medium">Drop CSV file here or <span className="text-brand-400">browse</span></p>
-        <p className="text-xs text-gray-600 mt-1">Columns: name, email, phone, tags (pipe-separated)</p>
+        <p className="text-sm text-gray-400 font-medium">
+          Drop CSV file here or <span className="text-brand-400">browse</span>
+        </p>
+        <p className="text-xs text-gray-600 mt-1">
+          Columns: name, email, phone, tags (pipe-separated)
+        </p>
+
+        {/* Sample CSV download buttons */}
+        <div
+          className="flex items-center justify-center gap-3 mt-4"
+          onClick={(e) => e.stopPropagation()}>
+          <button
+            onClick={downloadSampleCSV}
+            className="text-xs text-brand-400 hover:text-brand-300 underline transition-colors">
+            📥 Download Sample CSV
+          </button>
+          <span className="text-gray-700">|</span>
+          <button
+            onClick={downloadFailureTestCSV}
+            className="text-xs text-red-400 hover:text-red-300 underline transition-colors"
+            title="For testing campaign failures">
+            📥 Download Test Failure CSV
+          </button>
+        </div>
       </div>
 
       {/* Alerts */}
@@ -78,11 +184,13 @@ export default function ContactsPage() {
         </div>
       )}
       {uploadError && (
-        <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">{uploadError}</div>
+        <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
+          {uploadError}
+        </div>
       )}
 
       {/* Real-time Upload Progress */}
-      {currentProgress && currentProgress.status === 'processing' && (
+      {currentProgress && currentProgress.status === "processing" && (
         <div className="card animate-slide-up">
           <div className="flex items-center justify-between mb-3">
             <h3 className="font-semibold text-white flex items-center gap-2">
@@ -90,20 +198,21 @@ export default function ContactsPage() {
               <span className="w-2 h-2 bg-brand-400 rounded-full animate-pulse" />
             </h3>
             <span className="text-sm text-brand-400 font-mono font-bold">
-              {currentProgress.totalRows > 0 
+              {currentProgress.totalRows > 0
                 ? `${((currentProgress.processedRows / currentProgress.totalRows) * 100).toFixed(1)}%`
-                : 'Starting...'}
+                : "Starting..."}
             </span>
           </div>
-          
+
           {/* Progress Bar */}
           <div className="w-full bg-gray-800 rounded-full h-3 overflow-hidden mb-4">
             <div
               className="h-3 bg-brand-500 rounded-full transition-all duration-500 ease-out"
-              style={{ 
-                width: currentProgress.totalRows > 0 
-                  ? `${(currentProgress.processedRows / currentProgress.totalRows) * 100}%` 
-                  : '0%' 
+              style={{
+                width:
+                  currentProgress.totalRows > 0
+                    ? `${(currentProgress.processedRows / currentProgress.totalRows) * 100}%`
+                    : "0%",
               }}
             />
           </div>
@@ -111,19 +220,27 @@ export default function ContactsPage() {
           {/* Stats */}
           <div className="grid grid-cols-4 gap-4 text-center">
             <div>
-              <p className="text-xl font-bold text-white">{currentProgress.totalRows?.toLocaleString() || 0}</p>
+              <p className="text-xl font-bold text-white">
+                {currentProgress.totalRows?.toLocaleString() || 0}
+              </p>
               <p className="text-xs text-gray-500 mt-1">Total Rows</p>
             </div>
             <div>
-              <p className="text-xl font-bold text-emerald-400">{currentProgress.insertedRows?.toLocaleString() || 0}</p>
+              <p className="text-xl font-bold text-emerald-400">
+                {currentProgress.insertedRows?.toLocaleString() || 0}
+              </p>
               <p className="text-xs text-gray-500 mt-1">Inserted</p>
             </div>
             <div>
-              <p className="text-xl font-bold text-blue-400">{currentProgress.updatedRows?.toLocaleString() || 0}</p>
+              <p className="text-xl font-bold text-blue-400">
+                {currentProgress.updatedRows?.toLocaleString() || 0}
+              </p>
               <p className="text-xs text-gray-500 mt-1">Updated</p>
             </div>
             <div>
-              <p className="text-xl font-bold text-red-400">{currentProgress.failedRows?.toLocaleString() || 0}</p>
+              <p className="text-xl font-bold text-red-400">
+                {currentProgress.failedRows?.toLocaleString() || 0}
+              </p>
               <p className="text-xs text-gray-500 mt-1">Failed</p>
             </div>
           </div>
@@ -131,20 +248,22 @@ export default function ContactsPage() {
       )}
 
       {/* Upload Completed */}
-      {currentProgress && currentProgress.status === 'completed' && (
+      {currentProgress && currentProgress.status === "completed" && (
         <div className="bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-4 py-3 rounded-lg text-sm animate-slide-up">
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-2">
-              <span>✓</span> 
-              Upload completed! Inserted: {currentProgress.insertedRows}, Updated: {currentProgress.updatedRows}
-              {currentProgress.failedRows > 0 && `, Failed: ${currentProgress.failedRows}`}
+              <span>✓</span>
+              Upload completed! Inserted: {currentProgress.insertedRows},
+              Updated: {currentProgress.updatedRows}
+              {currentProgress.failedRows > 0 &&
+                `, Failed: ${currentProgress.failedRows}`}
             </span>
           </div>
         </div>
       )}
 
       {/* Upload Failed */}
-      {currentProgress && currentProgress.status === 'failed' && (
+      {currentProgress && currentProgress.status === "failed" && (
         <div className="bg-red-500/10 border border-red-500/30 text-red-400 px-4 py-3 rounded-lg text-sm">
           <span className="flex items-center gap-2">
             <span>✗</span> Upload failed: {currentProgress.error}
@@ -154,51 +273,106 @@ export default function ContactsPage() {
 
       {/* Filters */}
       <div className="flex flex-wrap gap-3">
-        <input className="input max-w-xs" placeholder="🔍  Search name or email…" value={search}
-          onChange={(e) => setSearch(e.target.value)} />
-        <input className="input max-w-48" placeholder="Filter by tag"
-          onChange={(e) => dispatch(setFilters({ tags: e.target.value }))} />
-        <select className="input max-w-44"
+        <input
+          className="input max-w-xs"
+          placeholder="🔍  Search name or email…"
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+        <input
+          className="input max-w-48"
+          placeholder="Filter by tag"
+          onChange={(e) => dispatch(setFilters({ tags: e.target.value }))}
+        />
+        <select
+          className="input max-w-44"
           onChange={(e) => dispatch(setFilters({ sortBy: e.target.value }))}>
           <option value="createdAt">Sort: Date</option>
           <option value="name">Sort: Name</option>
           <option value="email">Sort: Email</option>
         </select>
-        <select className="input max-w-36"
+        <select
+          className="input max-w-36"
           onChange={(e) => dispatch(setFilters({ sortDir: e.target.value }))}>
           <option value="desc">Desc</option>
           <option value="asc">Asc</option>
         </select>
       </div>
 
+      <div>
+        <span className="font-bold">NOTE: </span>If email text contains "fail"
+        then that contact will failed can be used to test campaign failure
+        scenarios:
+        <button
+          onClick={() => downloadSampleCSV()}
+          className="text-blue-500 underline">
+          {" "}
+          Sample CSV
+        </button>{" "}
+        to try it out.
+      </div>
+
       {/* Table */}
       <div className="table-container">
         <table className="table">
-          <thead><tr>{['Name', 'Email', 'Phone', 'Tags', 'Created'].map((h) => <th key={h} className="th">{h}</th>)}</tr></thead>
+          <thead>
+            <tr>
+              {["Name", "Email", "Phone", "Tags", "Created"].map((h) => (
+                <th key={h} className="th">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="td text-center py-16 text-gray-600">
-                <span className="animate-spin inline-block mr-2">⏳</span>Loading contacts…
-              </td></tr>
-            ) : items.length === 0 ? (
-              <tr><td colSpan={5} className="td text-center py-16">
-                <p className="text-4xl mb-2">👥</p>
-                <p className="text-gray-600 text-sm">No contacts yet. Upload a CSV to get started.</p>
-              </td></tr>
-            ) : items.map((c) => (
-              <tr key={c._id} className="hover:bg-gray-800/30 transition-colors">
-                <td className="td font-medium text-white">{c.name}</td>
-                <td className="td text-gray-400">{c.email || <span className="text-gray-700">—</span>}</td>
-                <td className="td text-gray-400">{c.phone || <span className="text-gray-700">—</span>}</td>
-                <td className="td">
-                  <div className="flex flex-wrap gap-1">
-                    {(c.tags || []).slice(0, 4).map((t) => <span key={t} className="badge badge-blue">{t}</span>)}
-                    {(c.tags || []).length > 4 && <span className="text-xs text-gray-600">+{c.tags.length - 4}</span>}
-                  </div>
+              <tr>
+                <td colSpan={5} className="td text-center py-16 text-gray-600">
+                  <span className="animate-spin inline-block mr-2">⏳</span>
+                  Loading contacts…
                 </td>
-                <td className="td text-gray-500 text-xs">{new Date(c.createdAt).toLocaleDateString()}</td>
               </tr>
-            ))}
+            ) : items.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="td text-center py-16">
+                  <p className="text-4xl mb-2">👥</p>
+                  <p className="text-gray-600 text-sm">
+                    No contacts yet. Upload a CSV to get started.
+                  </p>
+                </td>
+              </tr>
+            ) : (
+              items.map((c) => (
+                <tr
+                  key={c._id}
+                  className="hover:bg-gray-800/30 transition-colors">
+                  <td className="td font-medium text-white">{c.name}</td>
+                  <td className="td text-gray-400">
+                    {c.email || <span className="text-gray-700">—</span>}
+                  </td>
+                  <td className="td text-gray-400">
+                    {c.phone || <span className="text-gray-700">—</span>}
+                  </td>
+                  <td className="td">
+                    <div className="flex flex-wrap gap-1">
+                      {(c.tags || []).slice(0, 4).map((t) => (
+                        <span key={t} className="badge badge-blue">
+                          {t}
+                        </span>
+                      ))}
+                      {(c.tags || []).length > 4 && (
+                        <span className="text-xs text-gray-600">
+                          +{c.tags.length - 4}
+                        </span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="td text-gray-500 text-xs">
+                    {new Date(c.createdAt).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>
@@ -206,13 +380,26 @@ export default function ContactsPage() {
       {/* Pagination */}
       {meta.totalPages > 1 && (
         <div className="flex items-center justify-between text-sm">
-          <span className="text-gray-500">Showing {items.length} of {meta.total.toLocaleString()} contacts · Page {meta.page}/{meta.totalPages}</span>
+          <span className="text-gray-500">
+            Showing {items.length} of {meta.total.toLocaleString()} contacts ·
+            Page {meta.page}/{meta.totalPages}
+          </span>
           <div className="flex gap-2">
-            <button onClick={() => gotoPage(page - 1)} disabled={!meta.hasPrevPage} className="btn-secondary py-1.5 px-3 text-xs disabled:opacity-40">← Prev</button>
-            <button onClick={() => gotoPage(page + 1)} disabled={!meta.hasNextPage} className="btn-secondary py-1.5 px-3 text-xs disabled:opacity-40">Next →</button>
+            <button
+              onClick={() => gotoPage(page - 1)}
+              disabled={!meta.hasPrevPage}
+              className="btn-secondary py-1.5 px-3 text-xs disabled:opacity-40">
+              ← Prev
+            </button>
+            <button
+              onClick={() => gotoPage(page + 1)}
+              disabled={!meta.hasNextPage}
+              className="btn-secondary py-1.5 px-3 text-xs disabled:opacity-40">
+              Next →
+            </button>
           </div>
         </div>
       )}
     </div>
-  )
+  );
 }

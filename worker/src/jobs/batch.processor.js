@@ -7,15 +7,22 @@ const { enqueueMessageRetry } = require('../queues/retry.queue');
 const FAILURE_RATE_MIN = 0.05;
 const FAILURE_RATE_MAX = 0.15;
 const SEND_DELAY_MS = 2000; // simulate per-message send time
-const MAX_RETRIES = 3;
+const MAX_RETRIES = process.env.MAX_MESSAGE_RETRIES ? parseInt(process.env.MAX_MESSAGE_RETRIES) : 3;
 
 /**
  * Simulates sending a message to a contact.
  * Returns { success, error }
+ * 
+ * Special testing: If contact has "force-fail" tag, always fail
  */
 const simulateSend = async (message) => {
   // Artificial processing delay
   await new Promise((r) => setTimeout(r, SEND_DELAY_MS + Math.random() * 1500));
+
+  // TESTING: Force failure if message email contains "fail"
+  if (message.email && message.email.includes('fail')) {
+    return { success: false, error: `FORCED FAILURE for testing: ${message.email}` };
+  }
 
   // Random 5–15% failure
   const failureRate = FAILURE_RATE_MIN + Math.random() * (FAILURE_RATE_MAX - FAILURE_RATE_MIN);

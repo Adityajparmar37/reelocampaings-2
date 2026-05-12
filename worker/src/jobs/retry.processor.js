@@ -6,14 +6,21 @@ const messagesRepo = require('../repositories/messages.repository');
 const { publishEvent } = require('../pubsub/publisher');
 
 const SEND_DELAY_MS = 2000;
-const FAILURE_RATE_MIN = 0.05;
-const FAILURE_RATE_MAX = 0.15;
+const FAILURE_RATE_MIN = 0.15;
+const FAILURE_RATE_MAX = 0.30;
 
 /**
  * Simulates sending a message (same as batch processor).
+ * Special testing: If email contains "fail", always fail
  */
 const simulateSend = async (message) => {
   await new Promise((r) => setTimeout(r, SEND_DELAY_MS + Math.random() * 1500));
+  
+  // TESTING: Force failure if message email contains "fail"
+  if (message.email && message.email.includes('fail')) {
+    return { success: false, error: `FORCED FAILURE for testing: ${message.email}` };
+  }
+  
   const failureRate = FAILURE_RATE_MIN + Math.random() * (FAILURE_RATE_MAX - FAILURE_RATE_MIN);
   const failed = Math.random() < failureRate;
 
