@@ -4,6 +4,7 @@ import {
   fetchContacts,
   fetchContactStats,
   setFilters,
+  deleteContact,
 } from "../store/slices/contactSlice";
 import { uploadCSV, clearSuccess } from "../store/slices/uploadSlice";
 import { useUploadSocket } from "../hooks/useUploadSocket";
@@ -22,7 +23,7 @@ import {
 
 export default function ContactsPage() {
   const dispatch = useDispatch();
-  const { items, meta, loading, filters } = useSelector((s) => s.contacts);
+  const { items, meta, loading, filters, deleting } = useSelector((s) => s.contacts);
   const {
     uploading,
     successMessage,
@@ -95,6 +96,13 @@ export default function ContactsPage() {
     a.download = "test_failure_contacts.csv";
     a.click();
     window.URL.revokeObjectURL(url);
+  };
+
+  const handleDelete = async (id, name) => {
+    if (window.confirm(`Are you sure you want to delete "${name}"?`)) {
+      await dispatch(deleteContact(id));
+      load(page);
+    }
   };
 
   return (
@@ -309,19 +317,20 @@ export default function ContactsPage() {
                   {h}
                 </th>
               ))}
+              <th className="th">Actions</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan={5} className="td text-center py-16 text-gray-600">
+                <td colSpan={6} className="td text-center py-16 text-gray-600">
                   <span className="animate-spin inline-block mr-2">⏳</span>
                   Loading contacts…
                 </td>
               </tr>
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={5} className="td text-center py-16">
+                <td colSpan={6} className="td text-center py-16">
                   <p className="text-4xl mb-2">👥</p>
                   <p className="text-gray-600 text-sm">
                     No contacts yet. Upload a CSV to get started.
@@ -356,6 +365,15 @@ export default function ContactsPage() {
                   </td>
                   <td className="td text-gray-500 text-xs">
                     {new Date(c.createdAt).toLocaleDateString()}
+                  </td>
+                  <td className="td">
+                    <button
+                      onClick={() => handleDelete(c._id, c.name)}
+                      disabled={deleting === c._id}
+                      className="text-red-400 hover:text-red-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm px-2 py-1 rounded hover:bg-red-500/10"
+                      title="Delete contact">
+                      {deleting === c._id ? "⏳" : "🗑️"}
+                    </button>
                   </td>
                 </tr>
               ))
