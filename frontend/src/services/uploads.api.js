@@ -1,4 +1,4 @@
-import './api'
+import api from './api'
 export const uploadsApi = {
   list:   (params) => api.get('/uploads', { params }),
   get:    (id)     => api.get(`/uploads/${id}`),
