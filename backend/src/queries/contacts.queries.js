@@ -20,7 +20,6 @@ const bulkUpsertContacts = async (contacts) => {
         $set: {
           name: c.name,
           phone: c.phone || null,
-          metadata: c.metadata || {},
           tags: c.tags || [],
           updatedAt: now,
         },

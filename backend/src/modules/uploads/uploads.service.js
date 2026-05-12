@@ -67,20 +67,11 @@ const processCSV = async (uploadId, filePath) => {
 
     stream.on('data', async (row) => {
       totalRows++;
-      let metadata = {};
-      if (row.metadata) {
-        try {
-          metadata = JSON.parse(row.metadata);
-        } catch (e) {
-          logger.error(`[Upload] Invalid JSON metadata: ${row.metadata}`);
-        }
-      }
 
       const contact = {
         name: row.name || '',
         email: row.email ? row.email.trim().toLowerCase() : undefined,
         phone: row.phone || undefined,
-        metadata,
         tags: row.tags ? row.tags.split('|').map((t) => t.trim()) : [],
       };
 

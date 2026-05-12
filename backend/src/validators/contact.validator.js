@@ -6,7 +6,6 @@ const createContactSchema = z.object({
   name: z.string().min(1).max(200),
   email: z.string().email().optional(),
   phone: z.string().max(20).optional(),
-  metadata: z.record(z.string(), z.any()).optional().default({}),
   tags: z.array(z.string().max(50)).optional().default([]),
 });
 

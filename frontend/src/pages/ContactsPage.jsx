@@ -68,7 +68,7 @@ export default function ContactsPage() {
       >
         <p className="text-3xl mb-2">📄</p>
         <p className="text-sm text-gray-400 font-medium">Drop CSV file here or <span className="text-brand-400">browse</span></p>
-        <p className="text-xs text-gray-600 mt-1">Columns: name, email, phone, tags (pipe-separated), metadata (JSON)</p>
+        <p className="text-xs text-gray-600 mt-1">Columns: name, email, phone, tags (pipe-separated)</p>
       </div>
 
       {/* Alerts */}
