@@ -3,20 +3,27 @@
 const Redis = require('ioredis');
 const env = require('./env');
 
-const opts = {
-  host: env.REDIS_HOST,
-  port: env.REDIS_PORT,
-  password: env.REDIS_PASSWORD || undefined,
-  retryStrategy: (t) => Math.min(t * 100, 3000),
-  maxRetriesPerRequest: 3,
+// Shared Redis options
+const redisOptions = {
+  maxRetriesPerRequest: null,
+  enableReadyCheck: false,
 };
 
-// BullMQ requires its own connection object (not shared)
-const bullMQConnection = { host: env.REDIS_HOST, port: env.REDIS_PORT, password: env.REDIS_PASSWORD || undefined };
+// BullMQ connection
+const bullMQConnection = new Redis(env.REDIS_URL, redisOptions);
 
 // Publisher for Pub/Sub events
-const redisPublisher = new Redis(opts);
-redisPublisher.on('connect', () => console.log('[Worker/Redis] Publisher connected'));
-redisPublisher.on('error', (e) => console.error('[Worker/Redis] Publisher error:', e.message));
+const redisPublisher = new Redis(env.REDIS_URL, redisOptions);
 
-module.exports = { bullMQConnection, redisPublisher };
+redisPublisher.on('connect', () => {
+  console.log('[Worker/Redis] Publisher connected');
+});
+
+redisPublisher.on('error', (e) => {
+  console.error('[Worker/Redis] Publisher error:', e.message);
+});
+
+module.exports = {
+  bullMQConnection,
+  redisPublisher,
+};
